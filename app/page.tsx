@@ -18,7 +18,7 @@ export default function Home() {
                   1
                 </div>
                 <p className="text-[#333]">
-                  Click on "<span className="font-semibold text-[#FF0048]">Get Now</span>"
+                  Click on &quot;<span className="font-semibold text-[#FF0048]">Get Now</span>&quot;
                 </p>
               </li>
               
