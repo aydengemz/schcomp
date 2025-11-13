@@ -81,6 +81,7 @@ const NAMES = [
 const BASE_DEST_URL =
   "https://t.afftrackr.com/?oex3=qDiIvIZ0FPdDoxiy2qULH4%2busLybvWhRvQJDRoz7h5U%3d&s1=";
 
+
 export default function AppleRewardPage() {
   // ——— helpers ———
   const extractSource = (): string => {
@@ -143,46 +144,39 @@ export default function AppleRewardPage() {
   // ——— pixel: ViewContent on load ———
   useEffect(() => {
     const fireVC = () => {
-      if (window.ttq) {
-        window.ttq.track("ViewContent", {
-          content_type: "product",
-          content_id: "shein-lander",
-        });
-      } else {
+      if (typeof window === "undefined" || !window.ttq) {
         setTimeout(fireVC, 50);
+        return;
       }
+      window.ttq.track("ViewContent", {
+        content_type: "product",
+        content_id: "shein-bonus-750", // consistent ID
+      });
     };
     fireVC();
   }, []);
 
-  // ——— A. Client-side fallback events (3 hits on load) ———
+  // ——— A. Client-side events on load (light extra signal) ———
   useEffect(() => {
-    const fireFallbackEvents = () => {
-      if (!window.ttq) {
-        setTimeout(fireFallbackEvents, 50);
+    const fireOnLoadEvents = () => {
+      if (typeof window === "undefined" || !window.ttq) {
+        setTimeout(fireOnLoadEvents, 50);
         return;
       }
 
       const baseProps = {
-        content_id: "cash-rewards-750",
+        content_id: "shein-bonus-750",
         content_type: "product",
         value: 0.5,
         currency: "USD",
-        contents: [{ content_id: "cash-rewards-750", quantity: 1 }],
+        contents: [{ content_id: "shein-bonus-750", quantity: 1 }],
       };
 
-      // Fallback client events
+      // Only AddToCart on load – no Purchase/SubmitForm spam
       window.ttq.track("AddToCart", baseProps);
-      window.ttq.track("Purchase", baseProps);
-      window.ttq.track("SubmitForm", {
-        content_id: "cash-rewards-lead",
-        content_type: "lead",
-        value: 0.5,
-        currency: "USD",
-      });
     };
 
-    fireFallbackEvents();
+    fireOnLoadEvents();
   }, []);
 
   // ——— B. Server-side tracking helper ———
@@ -209,6 +203,7 @@ export default function AppleRewardPage() {
           user_agent:
             typeof navigator !== "undefined" ? navigator.userAgent : "",
         },
+        // event_id: generateEventId(), // optional if you later want dedupe
       };
 
       return fetch("/track-tiktok-event.php", {
@@ -223,43 +218,45 @@ export default function AppleRewardPage() {
     []
   );
 
-  // ——— CTA: server-side events (primary) then redirect after 500ms ———
+  // ——— CTA: server-side events (primary) then redirect ———
   const handleCTA = useCallback(() => {
     if (typeof window === "undefined") return;
 
     const baseProps = {
-      content_id: "shien-rewards-750",
+      content_id: "shein-bonus-750",
       content_type: "product",
       value: 0.5,
       currency: "USD",
-      contents: [{ content_id: "shien-rewards-750", quantity: 1 }],
-    };
-
-    const submitProps = {
-      content_id: "shien-rewards-lead",
-      content_type: "lead",
-      value: 0.5,
-      currency: "USD",
+      contents: [{ content_id: "shein-bonus-750", quantity: 1 }],
     };
 
     try {
-      Promise.all([
+      const trackingPromise = Promise.all([
         trackServerSideEvent("AddToCart", baseProps),
         trackServerSideEvent("Purchase", baseProps),
-        trackServerSideEvent("SubmitForm", submitProps),
-      ]).catch((err) => console.warn("Promise.all TTQ error:", err));
+      ]);
+
+      const source = extractSource();
+      const destUrl = source
+        ? `${BASE_DEST_URL}${encodeURIComponent(source)}`
+        : BASE_DEST_URL;
+
+      // Small safety: wait for tracking OR 1s, then redirect
+      const timeoutPromise = new Promise((resolve) =>
+        setTimeout(resolve, 1000)
+      );
+
+      Promise.race([trackingPromise, timeoutPromise]).finally(() => {
+        window.location.href = destUrl;
+      });
     } catch (err) {
       console.warn("CTA server-side tracking error:", err);
-    }
-
-    const source = extractSource();
-    const destUrl = source
-      ? `${BASE_DEST_URL}${encodeURIComponent(source)}`
-      : BASE_DEST_URL;
-
-    setTimeout(() => {
+      const source = extractSource();
+      const destUrl = source
+        ? `${BASE_DEST_URL}${encodeURIComponent(source)}`
+        : BASE_DEST_URL;
       window.location.href = destUrl;
-    }, 500);
+    }
   }, [trackServerSideEvent]);
 
   return (
