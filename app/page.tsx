@@ -147,8 +147,6 @@ export default function AppleRewardPage() {
         window.ttq.track("ViewContent", {
           content_type: "product",
           content_id: "shein-lander",
-          currency: "USD",
-          value: 0,
         });
       } else {
         setTimeout(fireVC, 50);
@@ -167,7 +165,7 @@ export default function AppleRewardPage() {
 
       const baseProps = {
         content_id: "cash-rewards-750",
-        content_type: "reward",
+        content_type: "product",
         value: 0.5,
         currency: "USD",
         contents: [{ content_id: "cash-rewards-750", quantity: 1 }],
@@ -231,7 +229,7 @@ export default function AppleRewardPage() {
 
     const baseProps = {
       content_id: "shien-rewards-750",
-      content_type: "reward",
+      content_type: "product",
       value: 0.5,
       currency: "USD",
       contents: [{ content_id: "shien-rewards-750", quantity: 1 }],
